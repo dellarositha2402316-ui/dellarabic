@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Profil pengguna dan pengaturan belajar bahasa Arab pribadi",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID"
+        },
+        "email": {
+          "type": "string",
+          "description": "Alamat email terdaftar"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Nama tampilan pengguna"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role: student atau admin"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Waktu pendaftaran"
+        }
+      },
+      "required": ["userId", "email"]
+    },
+    "UserProgress": {
+      "title": "UserProgress",
+      "description": "Rekapitulasi progres hafalan mufrodat dan nilai kuis per santri",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "ID pengguna pemilik data"
+        },
+        "masteredWordIds": {
+          "type": "array",
+          "description": "Daftar ID kosakata yang telah dihafal"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "Waktu pembaruan terakhir"
+        }
+      },
+      "required": ["userId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Data profil akun santri/admin, hanya dapat dibaca dan ditulis oleh pemilik userId"
+    },
+    "/user_progress/{userId}": {
+      "schema": "UserProgress",
+      "description": "Progres belajar dan hafalan santri pribadi, hanya dapat dibaca dan ditulis oleh pemilik userId"
+    }
+  }
+}

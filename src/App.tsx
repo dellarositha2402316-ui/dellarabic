@@ -14,10 +14,12 @@ import { fetchCustomMufrodat, fetchAnnouncements } from './services/api';
 import { MufrodatItem, Announcement } from './types';
 import { Loader2 } from 'lucide-react';
 
+import { saveProgressToFirestore, loadProgressFromFirestore } from './lib/firebase';
+
 const MASTERED_STORAGE_KEY = 'al_arabiyyah_mastered_ids_v1';
 
 function MainAppContent() {
-  const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const { user, isAuthenticated, isLoading, isAdmin } = useAuth();
   const [currentTab, setCurrentTab] = useState<string>('beranda');
 
   // Mufrodat state
@@ -25,7 +27,7 @@ function MainAppContent() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [masteredIds, setMasteredIds] = useState<Set<string>>(new Set());
 
-  // Load mastered IDs from localStorage
+  // Load mastered IDs from localStorage and Firestore for the current user
   useEffect(() => {
     try {
       const stored = localStorage.getItem(MASTERED_STORAGE_KEY);
@@ -35,7 +37,19 @@ function MainAppContent() {
     } catch (e) {
       console.error(e);
     }
-  }, []);
+
+    if (user?.id) {
+      loadProgressFromFirestore(user.id).then((cloudIds) => {
+        if (cloudIds && cloudIds.length > 0) {
+          setMasteredIds((prev) => {
+            const merged = new Set([...Array.from(prev), ...cloudIds]);
+            localStorage.setItem(MASTERED_STORAGE_KEY, JSON.stringify(Array.from(merged)));
+            return merged;
+          });
+        }
+      });
+    }
+  }, [user?.id]);
 
   // Fetch custom mufrodat and announcements from server
   const reloadServerData = async () => {
@@ -55,7 +69,7 @@ function MainAppContent() {
     reloadServerData();
   }, []);
 
-  // Toggle vocabulary mastery
+  // Toggle vocabulary mastery and sync to Firestore
   const toggleMastered = (id: string) => {
     setMasteredIds((prev) => {
       const updated = new Set(prev);
@@ -64,7 +78,12 @@ function MainAppContent() {
       } else {
         updated.add(id);
       }
-      localStorage.setItem(MASTERED_STORAGE_KEY, JSON.stringify(Array.from(updated)));
+      const arrayIds = Array.from(updated);
+      localStorage.setItem(MASTERED_STORAGE_KEY, JSON.stringify(arrayIds));
+
+      if (user?.id) {
+        saveProgressToFirestore(user.id, arrayIds);
+      }
       return updated;
     });
   };

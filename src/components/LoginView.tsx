@@ -16,6 +16,7 @@ export const LoginView: React.FC = () => {
   // Custom student state
   const [studentName, setStudentName] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleNotice, setGoogleNotice] = useState('');
 
   const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +43,12 @@ export const LoginView: React.FC = () => {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    setGoogleNotice('');
     try {
-      await loginWithGoogle();
+      const res = await loginWithGoogle();
+      if (res && res.error) {
+        setGoogleNotice(res.error);
+      }
     } finally {
       setGoogleLoading(false);
     }
@@ -145,6 +150,11 @@ export const LoginView: React.FC = () => {
                   </svg>
                   <span>{googleLoading ? 'Menghubungkan...' : 'Masuk dengan Google (Firebase)'}</span>
                 </button>
+                {googleNotice && (
+                  <p className="mt-2 text-[11px] text-amber-300 bg-amber-950/40 border border-amber-800/50 p-2.5 rounded-xl">
+                    {googleNotice}
+                  </p>
+                )}
               </div>
 
               <div className="relative flex py-1 items-center">

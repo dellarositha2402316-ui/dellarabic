@@ -1,0 +1,47 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Koleksi data pengguna: Hanya pemilik userId yang boleh membaca dan menulis datanya sendiri
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // Seluruh subkoleksi pribadi (progres hafalan, hasil kuis, catatan)
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Koleksi progres belajar mandiri
+    match /user_progress/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Koleksi kosakata pribadi santri
+    match /user_mufrodat/{docId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Koleksi riwayat kuis
+    match /user_quiz_results/{docId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+  }
+}
