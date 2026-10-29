@@ -1,0 +1,6 @@
+{
+  "name": "Al-Arabiyyah - Pembelajaran Bahasa Arab Interaktif",
+  "description": "Platform pembelajaran Bahasa Arab interaktif lengkap dengan mufrodat, nahwu-sharaf, kuis, latihan pelafalan, dan tutor cerdas bertenaga Gemini AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
